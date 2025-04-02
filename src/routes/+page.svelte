@@ -1,8 +1,8 @@
 <script lang="ts">
 	import App from "$lib/App.svelte";
 </script>
-<div class="static mx-auto w-full h-[420px]">
+<div class="static w-full h-full lg:h-[70vh]">
     <App />
 </div>
-<h1>Welcome to SvelteKit</h1>
-<p>Visit <a href="https://svelte.dev/docs/kit">svelte.dev/docs/kit</a> to read the documentation</p>
+<h1>Orden total:</h1>
+<p>Aquí aparecerá la tabla con el total de escalas añadidas.</p>
