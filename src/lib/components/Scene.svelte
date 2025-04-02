@@ -3,7 +3,8 @@
   import { CubeEnvironment, OrbitControls, Suspense, Text } from "@threlte/extras";
   import { onMount } from "svelte";
   import { DoubleSide, Color, ShaderMaterial, type WebGLRenderer } from "three";
-  
+  import Emoi from "./emoi.svelte";
+
   let time = 0;
   let shaderMaterial: ShaderMaterial | undefined;
   
@@ -80,4 +81,6 @@
     side={DoubleSide}
   />
 </T.Mesh>
+
+<Emoi />
 </Suspense>

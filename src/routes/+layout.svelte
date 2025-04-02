@@ -6,7 +6,7 @@
 </script>
 <div>
 	<Header />
-	<main class="container mx-auto p-4">
+	<main class="mx-auto w-full">
 		{@render children()}
 	</main>
 	<footer class="bg-gray-800 text-white p-4 text-center fixed bottom-0 w-full">

@@ -24,3 +24,8 @@
 body {
   @apply bg-gray-50 dark:bg-gray-900;
 }
+
+canvas {
+  display: block;
+  z-index: -1;
+}
