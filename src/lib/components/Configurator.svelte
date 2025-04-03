@@ -5,39 +5,130 @@
     let cantidad = $state(1); //cantidad de kits
     let dcantidad = $state(false);
     let selectedScale = $state("");
-    let qitems = $state(0); //cantidad de figuras por kit con valor String
+    let qitems = $state(0); //cantidad de figuras por kit
     let totalFigures = $state(0); //total de figuras
+    let subtotalFigures = $state(0); //subtotal de figuras
+    let qFiguraInicial1 = $state(1);
+    let qFiguraInicial2 = $state(1);
+    let qFiguraInicial3 = $state(1);
+    let qFiguraInicial4 = $state(1);
+    let enabledOrder = $state(false);
+    let costoPorFigura = $state(0); //costo por figura
+
+    // Calcula el total de figuras
     let calculateFigurines = () => {
         const sum = [1, 2, 3, 4].reduce((acc, num) => {
             const input = document.querySelector(`#ntipo-${num}`) as HTMLInputElement;
-            return acc + (input ? parseInt(input.value) || 0:0);
+            return acc + (input ? parseInt(input.value) || 0 : 0);
         }, 0);
-        totalFigures = sum * cantidad * qitems;
+        subtotalFigures = sum;
+        totalFigures = sum * cantidad;
+        subtotalFigures >= qitems ? enabledOrder = true : enabledOrder = false;
+        // console.log(
+        //     `Pose1: ${qFiguraInicial1}. 
+        //     Pose2: ${qFiguraInicial2}. 
+        //     Pose3: ${qFiguraInicial3}.
+        //     Pose4: ${qFiguraInicial4}. 
+        //     Total figures: ${totalFigures}`
+        // );
     };
+
+    // Selecciona la escala de acuerdo a las opciones disponibles
     let selectScale = () => {
         selectedScale = (document.getElementById("fescala") as HTMLSelectElement)?.value;
+        switch (selectedScale) {
+            case '1 a 50':
+                qFiguraInicial1 = 3;
+                qFiguraInicial2 = 3;
+                qFiguraInicial3 = 2;
+                qFiguraInicial4 = 2;
+                costoPorFigura = 10;
+                break;
+            case '1 a 75':
+                qFiguraInicial1 = 4;
+                qFiguraInicial2 = 4;
+                qFiguraInicial3 = 4;
+                qFiguraInicial4 = 3;
+                costoPorFigura = 7;
+                break;
+            case '1 a 100':
+                qFiguraInicial1 = 6;
+                qFiguraInicial2 = 6;
+                qFiguraInicial3 = 4;
+                qFiguraInicial4 = 4;
+                costoPorFigura = 5;
+                break;
+            case '1 a 150': 
+                qFiguraInicial1 = 9;
+                qFiguraInicial2 = 9;
+                qFiguraInicial3 = 9;
+                qFiguraInicial4 = 8;
+                costoPorFigura = 3;
+                break;
+            case '1 a 200':
+                qFiguraInicial1 = 13;
+                qFiguraInicial2 = 13;
+                qFiguraInicial3 = 12;
+                qFiguraInicial4 = 12;
+                costoPorFigura = 2;
+                break;
+            default:
+                qFiguraInicial1 = 1;
+                qFiguraInicial2 = 1;
+                qFiguraInicial3 = 1;
+                qFiguraInicial4 = 1;
+                costoPorFigura = 0;
+                break;
+        };
         const selectedItem = itemsScale.find((item) => item.value === selectedScale);
         qitems = selectedItem?.qitems || 0;
         dcantidad = true;
-        calculateFigurines();
-        console.log(selectedScale, qitems, `Total figures: ${totalFigures}`);
+        // calculateFigurines();
+        setTimeout(() => {
+            calculateFigurines();
+            const orderSummary = {
+            scale: selectedScale,
+            figures: {
+                standing_man: qFiguraInicial1,
+                standing_woman: qFiguraInicial2,
+                sitting: qFiguraInicial3,
+                walking: qFiguraInicial4
+            },
+            totalFigures: totalFigures,
+            totalAmount: totalFigures * costoPorFigura,
+            costPerFigure: costoPorFigura
+        };
+        
+        console.log('Order Summary:', orderSummary);
+        }, 0);
     };
     let quantityOptions = $derived(
         selectedScale === '1 a 50' || selectedScale === '1 a 75' 
         ? [1, 2, 3, 4, 5].map(value => ({ label: value.toString(), value, name: value.toString() })) 
         : [1, 2, 3, 4, 5, 6, 7, 8, 9, 10].map(value => ({ label: value.toString(), value, name: value.toString() }))
     );
+
+    // Cambia las clases de las imagenes al seleccionar el tipo de figura
+    let selectType = (num: number) => {
+        if ((document.querySelector(`#ntipo-${num}`) as HTMLSelectElement)?.value !== '0') {
+            document.querySelector(`#tipo-${num}`)?.classList.remove("blur-xs", "grayscale")
+        } else {
+            document.querySelector(`#tipo-${num}`)?.classList.add("blur-xs", "grayscale");
+        };
+        calculateFigurines();
+    };
+
+    // Establece las clases de las imagenes al cargar
     let classTypeOnLoad = (num: number) => {
         (document.querySelector(`#ntipo-${num}`) as HTMLSelectElement)?.value !== '0' 
         ? document.querySelector(`#tipo-${num}`)?.classList.add("h-16", "m-2") 
         : document.querySelector(`#tipo-${num}`)?.classList.add("h-16", "m-2", "blur-xs", "grayscale");
     };
-    let selectType = (num: number) => {
-        (document.querySelector(`#ntipo-${num}`) as HTMLSelectElement)?.value !== '0' 
-        ? document.querySelector(`#tipo-${num}`)?.classList.remove("blur-xs", "grayscale") 
-        : document.querySelector(`#tipo-${num}`)?.classList.add("blur-xs", "grayscale");
-    };
-    onMount(() => {classTypeOnLoad(1); classTypeOnLoad(2); classTypeOnLoad(3); classTypeOnLoad(4);});
+    onMount(() => {
+        for (let i = 1; i <= 4; i++) {
+            classTypeOnLoad(i);
+        }
+    });
 
 </script>
 <form>
@@ -67,6 +158,7 @@
                     items={quantityOptions}
                     class="col-span-1"
                     bind:value={cantidad}
+                    onchange={calculateFigurines}
                 />
                 <P class="col-span-3">paquetes de {qitems} escalas</P>
              </div>
@@ -83,47 +175,23 @@
                         </div>
                     </div>
                 {/snippet}
-                {@render values("mini_r0.png", 1, "De pie", 1)}
-                {@render values("mini_r0.png", 2, "De pie", 0)}
-                {@render values("mini_r0.png", 3, "Sentado", 2)}
-                {@render values("mini_r0.png", 4, "Caminando", 0)}
-                <!-- <div class="flex flex-row items-center">
-                    <img src="mini_r0.png" id="tipo-1" alt="de pie" />
-                    <div class="flex-col">
-                        <P size="sm">De pie</P>
-                        <NumberInput size="sm" id="ntipo-1" onchange={() => selectType(1)} min={0} max={20} value={1} />
-                    </div>
-                </div>
-                <div class="flex flex-row items-center">
-                    <img src="mini_r0.png" id="tipo-2" alt="de pie" />
-                    <div class="flex-col">
-                        <P size="sm">De pie</P>
-                        <NumberInput size="sm" id="ntipo-2" onchange={() => selectType(2)} min={0} max={20} value={0} />
-                    </div>
-                </div>
-                <div class="flex flex-row items-center">
-                    <img src="mini_r0.png" class="h-16 m-2" alt="de pie" />
-                    <div class="flex-col">
-                        <P size="sm">Sentado</P>
-                        <NumberInput size="sm" />
-                    </div>
-                </div>
-                <div class="flex flex-row items-center">
-                    <img src="mini_r0.png" class="h-16 m-2" alt="de pie" />
-                    <div class="flex-col">
-                        <P size="sm">Caminando</P>
-                        <NumberInput size="sm" />
-                    </div>
-                </div> -->
+                {@render values("mini_r0.png", 1, "Hombre de pie", qFiguraInicial1)}
+                {@render values("mini_r0.png", 2, "Mujer de pie", qFiguraInicial2)}
+                {@render values("mini_r0.png", 3, "Sentado", qFiguraInicial3)}
+                {@render values("mini_r0.png", 4, "Caminando", qFiguraInicial4)}
             </div>
         </Label>
         <div class="grid grid-cols-2 gap-6">
             <Label>Total:
                 <P size="xl" class="text-right font-bold">
-                    $ &nbsp;{totalFigures * 3} MXN
+                    {#if enabledOrder}
+                    $ &nbsp;{totalFigures * costoPorFigura} MXN
+                    {:else}
+                    $ &nbsp;- MXN
+                    {/if}
                 </P>
             </Label>
-            <Button class="w-full" size="lg" color="blue">
+            <Button class="w-full" size="lg" color="blue" disabled={!enabledOrder}>
                 Añadir
             </Button>
         </div>

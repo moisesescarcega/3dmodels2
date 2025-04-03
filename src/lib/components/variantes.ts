@@ -1,7 +1,7 @@
 export const itemsScale = [
     { name: "1 a 50", qitems:10, value: "1 a 50" },
-    { name: "1 a 75", qitems:20, value: "1 a 75" },
-    { name: "1 a 100", qitems:25, value: "1 a 100" },
+    { name: "1 a 75", qitems:15, value: "1 a 75" },
+    { name: "1 a 100", qitems:20, value: "1 a 100" },
     { name: "1 a 150", qitems:35, value: "1 a 150" },
     { name: "1 a 200", qitems:50, value: "1 a 200" },
 ];
