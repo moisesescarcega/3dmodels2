@@ -130,6 +130,26 @@
         }
     });
 
+    const handleAddToCart = () => {
+        const currentValues = {
+            standing_man: parseInt((document.querySelector('#ntipo-1') as HTMLInputElement)?.value || '0'),
+            standing_woman: parseInt((document.querySelector('#ntipo-2') as HTMLInputElement)?.value || '0'),
+            sitting: parseInt((document.querySelector('#ntipo-3') as HTMLInputElement)?.value || '0'),
+            walking: parseInt((document.querySelector('#ntipo-4') as HTMLInputElement)?.value || '0')
+        };
+
+        const orderSummary = {
+            scale: selectedScale,
+            kits: cantidad,
+            figures: currentValues,
+            figuresPerKit: qitems,
+            totalFigures: totalFigures,
+            totalAmount: totalFigures * costoPorFigura,
+            costPerFigure: costoPorFigura
+        };
+        
+        console.log('Cart Order Summary:', orderSummary);
+    };
 </script>
 <form>
     <Card class="gap-y-2">
@@ -191,7 +211,7 @@
                     {/if}
                 </P>
             </Label>
-            <Button class="w-full" size="lg" color="blue" disabled={!enabledOrder}>
+            <Button class="w-full" id="addToCart" size="lg" color="blue" disabled={!enabledOrder} onclick={handleAddToCart}>
                 Añadir
             </Button>
         </div>
