@@ -1,7 +1,8 @@
 <script lang="ts">
-	import { Button, Card, Heading, Label, NumberInput, P, Select } from "flowbite-svelte";
-    import { itemsScale } from "./variantes";
+	import { Button, Card, Heading, Label, NumberInput, P, Select, Toggle } from "flowbite-svelte";
+    import { itemsScale, itemsVariants, kitsVariants } from "./variantes";
 	import { onMount } from "svelte";
+    let toggleKits = $state(true);
     let cantidad = $state(1); //cantidad de kits
     let dcantidad = $state(false);
     let selectedScale = $state("");
@@ -24,13 +25,6 @@
         subtotalFigures = sum;
         totalFigures = sum * cantidad;
         subtotalFigures >= qitems ? enabledOrder = true : enabledOrder = false;
-        // console.log(
-        //     `Pose1: ${qFiguraInicial1}. 
-        //     Pose2: ${qFiguraInicial2}. 
-        //     Pose3: ${qFiguraInicial3}.
-        //     Pose4: ${qFiguraInicial4}. 
-        //     Total figures: ${totalFigures}`
-        // );
     };
 
     // Selecciona la escala de acuerdo a las opciones disponibles
@@ -147,7 +141,6 @@
             totalAmount: totalFigures * costoPorFigura,
             costPerFigure: costoPorFigura
         };
-        
         console.log('Cart Order Summary:', orderSummary);
     };
 </script>
@@ -168,7 +161,6 @@
         </Label>
         {#if dcantidad}
         <Label>Cantidad de kits:
-            <!-- <NumberInput size="lg" bind:value={cantidad} max={10} min={1} /> -->
              <div class="grid grid-cols-4 gap-2 items-center">
                 <Select 
                     required 
@@ -185,10 +177,20 @@
         </Label>
         {/if}
         <Label>Opciones:
+            <div class="flex flex-row items-center m-2">
+                <Toggle
+                    id="ftoggle"
+                    bind:checked={toggleKits}
+                    class="mr-2"
+                >
+                    Paquetes personalizables
+                </Toggle>
+            </div>
+            {#if toggleKits}
             <div class="grid grid-cols-2 gap-2">
                 {#snippet values(img:string, id:number, altimg:string, value:number)}
                     <div class="flex flex-row items-center">
-                        <img src={img} id={`tipo-${id}`} alt={altimg} />
+                        <img src={img} id={`tipo-${id}`} alt={altimg} class="h-16 m-2" />
                         <div class="flex-col">
                             <P size="sm">{altimg}</P>
                             <NumberInput size="sm" id={`ntipo-${id}`} onchange={() => selectType(id)} min={0} max={20} value={value} />
@@ -200,6 +202,35 @@
                 {@render values("mini_r0.png", 3, "Sentado", qFiguraInicial3)}
                 {@render values("mini_r0.png", 4, "Caminando", qFiguraInicial4)}
             </div>
+            {:else}
+            <Select 
+                required 
+                size="sm" 
+                id="fcantidad" 
+                placeholder="Elige tu kit..." 
+                items={kitsVariants}
+                class="col-span-1"
+            />
+            <div class="grid grid-cols-2 gap-2">
+                {#snippet values(img:string, id:number, altimg:string, value:number)}
+                <div class="flex flex-row items-center">
+                    <img src={img} id={`tipo-${id}`} alt={altimg} class="h-16 m-2" />
+                    <div class="flex-col">
+                        <P size="sm">{altimg}</P>
+                        <NumberInput size="sm" id={`ntipo-${id}`} disabled value={value} />
+                    </div>
+                </div>
+                {/snippet}
+                {@render values("mini_r0.png", 1, "pos1", 1)}
+                {@render values("mini_r0.png", 2, "pos2", 1)}
+                {@render values("mini_r0.png", 3, "pos3", 1)}
+                {@render values("mini_r0.png", 4, "pos4", 1)}
+                {@render values("mini_r0.png", 5, "pos5", 1)}
+                {@render values("mini_r0.png", 6, "pos6", 1)}
+                {@render values("mini_r0.png", 7, "pos7", 1)}
+                {@render values("mini_r0.png", 8, "pos8", 1)}
+            </div>
+            {/if}
         </Label>
         <div class="grid grid-cols-2 gap-6">
             <Label>Total:

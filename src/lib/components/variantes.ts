@@ -13,3 +13,8 @@ export const itemsVariants = [
     { name: "pos5", value: "pos5" },
     { name: "pos6", value: "pos6" }
 ]
+export const kitsVariants = [
+    { name: "orquesta", value: "orquesta" },
+    { name: "gym", value: "gym" },
+    { name: "museo", value: "museo" }
+]
