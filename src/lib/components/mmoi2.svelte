@@ -46,7 +46,7 @@ Command: npx @threlte/gltf@3.0.0 ./static/mmoi2.glb --transform --types --draco
     <T.Mesh
       geometry={gltf.nodes.Mesh_0.geometry}
       material={gltf.materials.Material_0}
-      position={[0, -2, 0]}
+      position={[0, -1, 0]}
       scale={[7, 7, 7]}
     />
   {:catch err}

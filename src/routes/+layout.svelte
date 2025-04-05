@@ -9,7 +9,7 @@
 	<main class="mx-auto w-full">
 		{@render children()}
 	</main>
-	<footer class="bg-gray-800 text-white p-4 text-center fixed bottom-0 w-full">
+	<footer class="bg-gray-800 text-white text-center fixed bottom-0 w-full">
 		<p>&copy; 2025 maquetas.xyz</p>
 	</footer>
 </div>

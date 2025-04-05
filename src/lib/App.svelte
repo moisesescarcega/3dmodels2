@@ -6,6 +6,6 @@
 <Canvas>
     <Scene />
 </Canvas>
-<section class="absolute right-0 top-[5rem] w-[400px]">
+<section class="absolute lg:right-3 mx-2 lg:top-[5rem] bottom-8 w-full lg:w-[360px]">
     <Configurator />
 </section>
