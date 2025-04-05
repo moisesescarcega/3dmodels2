@@ -2,29 +2,33 @@
 	import { Button, Card, Heading, Label, NumberInput, P, Select, Toggle } from "flowbite-svelte";
     import { itemsScale, itemsVariants, kitsVariants } from "./variantes";
 	import { onMount } from "svelte";
-    let toggleKits = $state(true);
-    let cantidad = $state(1); //cantidad de kits
-    let dcantidad = $state(false);
-    let selectedScale = $state("");
-    let qitems = $state(0); //cantidad de figuras por kit
-    let totalFigures = $state(0); //total de figuras
-    let subtotalFigures = $state(0); //subtotal de figuras
+    let toggleKits = $state(true); // por default habilitada personalizacion, se puede cambiar a kits predefinidos
+    let cantidad = $state(1); // cantidad de kits
+    let dcantidad = $state(true); // el campo de cantidad está inhabilitado por default
+    let selectedScale = $state(""); // sin escala seleccionada por default
+    let selectedKit = $state(""); // sin kit seleccionado por default 
+    let qitems = $state(0); // cantidad de figuras por kit
+    let totalFigures = $state(0); // total de figuras
+    let subtotalFigures = $state(0); // subtotal de figuras
     let qFiguraInicial1 = $state(1);
     let qFiguraInicial2 = $state(1);
     let qFiguraInicial3 = $state(1);
     let qFiguraInicial4 = $state(1);
-    let enabledOrder = $state(false);
-    let costoPorFigura = $state(0); //costo por figura
+    let enabledOrder = $state(false); // el botón de agregar se habilita si se cumplen los criterios
+    let costoPorFigura = $state(0); // costo por figura depende de la escala seleccionada, 0 por default
 
     // Calcula el total de figuras
     let calculateFigurines = () => {
-        const sum = [1, 2, 3, 4].reduce((acc, num) => {
-            const input = document.querySelector(`#ntipo-${num}`) as HTMLInputElement;
-            return acc + (input ? parseInt(input.value) || 0 : 0);
-        }, 0);
+        let sum: number;
+        if (toggleKits) {
+            sum = [1, 2, 3, 4].reduce((acc, num) => {
+                const input = document.querySelector(`#ntipo-${num}`) as HTMLInputElement;
+                return acc + (input ? parseInt(input.value) || 0 : 0);
+            }, 0);
+        } else { sum = qitems};
         subtotalFigures = sum;
         totalFigures = sum * cantidad;
-        subtotalFigures >= qitems ? enabledOrder = true : enabledOrder = false;
+        subtotalFigures >= qitems && qitems !== 0 ? enabledOrder = true : enabledOrder = false;
     };
 
     // Selecciona la escala de acuerdo a las opciones disponibles
@@ -77,7 +81,7 @@
         const selectedItem = itemsScale.find((item) => item.value === selectedScale);
         qitems = selectedItem?.qitems || 0;
         dcantidad = true;
-        // calculateFigurines();
+
         setTimeout(() => {
             calculateFigurines();
             const orderSummary = {
@@ -92,7 +96,6 @@
             totalAmount: totalFigures * costoPorFigura,
             costPerFigure: costoPorFigura
         };
-        
         console.log('Order Summary:', orderSummary);
         }, 0);
     };
@@ -102,13 +105,45 @@
         : [1, 2, 3, 4, 5, 6, 7, 8, 9, 10].map(value => ({ label: value.toString(), value, name: value.toString() }))
     );
 
+    let defineKit = () => {
+        selectedKit = (document.getElementById("fkit") as HTMLSelectElement)?.value;
+        switch (selectedScale) {
+            case '1 a 50':
+                costoPorFigura = 10;
+                break;
+            case '1 a 75':
+                costoPorFigura = 7;
+                break;
+            case '1 a 100':
+                costoPorFigura = 5;
+                break;
+            case '1 a 150':
+                costoPorFigura = 3;
+                break;
+            case '1 a 200':
+                costoPorFigura = 2;
+                break;
+            default:
+                costoPorFigura = 0;
+        };
+    };
+
     // Cambia las clases de las imagenes al seleccionar el tipo de figura
     let selectType = (num: number) => {
-        if ((document.querySelector(`#ntipo-${num}`) as HTMLSelectElement)?.value !== '0') {
-            document.querySelector(`#tipo-${num}`)?.classList.remove("blur-xs", "grayscale")
-        } else {
-            document.querySelector(`#tipo-${num}`)?.classList.add("blur-xs", "grayscale");
-        };
+        const input = document.querySelector(`#ntipo-${num}`) as HTMLInputElement;
+        if (input) {
+            // Validar y corregir el valor si excede el máximo
+            const value = parseInt(input.value);
+            if (value > 20) {
+                input.value = '20';
+            }
+            // Aplicar clases a la imagen
+            if (input.value !== '0') {
+                document.querySelector(`#tipo-${num}`)?.classList.remove("blur-xs", "grayscale");
+            } else {
+                document.querySelector(`#tipo-${num}`)?.classList.add("blur-xs", "grayscale");
+            }
+        }
         calculateFigurines();
     };
 
@@ -125,17 +160,22 @@
     });
 
     const handleAddToCart = () => {
-        const currentValues = {
-            standing_man: parseInt((document.querySelector('#ntipo-1') as HTMLInputElement)?.value || '0'),
-            standing_woman: parseInt((document.querySelector('#ntipo-2') as HTMLInputElement)?.value || '0'),
-            sitting: parseInt((document.querySelector('#ntipo-3') as HTMLInputElement)?.value || '0'),
-            walking: parseInt((document.querySelector('#ntipo-4') as HTMLInputElement)?.value || '0')
+        const currentValues = () => {
+            if (toggleKits) {
+                return {
+                    standing_man: parseInt((document.querySelector('#ntipo-1') as HTMLInputElement)?.value || '0'),
+                    standing_woman: parseInt((document.querySelector('#ntipo-2') as HTMLInputElement)?.value || '0'),
+                    sitting: parseInt((document.querySelector('#ntipo-3') as HTMLInputElement)?.value || '0'),
+                    walking: parseInt((document.querySelector('#ntipo-4') as HTMLInputElement)?.value || '0')
+                };    
+            } else {
+                return {kit: selectedKit};
+            }
         };
-
         const orderSummary = {
             scale: selectedScale,
             kits: cantidad,
-            figures: currentValues,
+            figures: currentValues(),
             figuresPerKit: qitems,
             totalFigures: totalFigures,
             totalAmount: totalFigures * costoPorFigura,
@@ -181,11 +221,14 @@
                 <Toggle
                     id="ftoggle"
                     bind:checked={toggleKits}
+                    onchange={calculateFigurines}
                     class="mr-2"
                 >
                     Paquetes personalizables
                 </Toggle>
             </div>
+        </Label>
+        <Label>
             {#if toggleKits}
             <div class="grid grid-cols-2 gap-2">
                 {#snippet values(img:string, id:number, altimg:string, value:number)}
@@ -193,7 +236,15 @@
                         <img src={img} id={`tipo-${id}`} alt={altimg} class="h-16 m-2" />
                         <div class="flex-col">
                             <P size="sm">{altimg}</P>
-                            <NumberInput size="sm" id={`ntipo-${id}`} onchange={() => selectType(id)} min={0} max={20} value={value} />
+                            <NumberInput 
+                                size="sm" 
+                                id={`ntipo-${id}`} 
+                                disabled={!dcantidad}
+                                onchange={() => selectType(id)} 
+                                min={0} 
+                                max={20} 
+                                value={value} 
+                            />
                         </div>
                     </div>
                 {/snippet}
@@ -206,10 +257,11 @@
             <Select 
                 required 
                 size="sm" 
-                id="fcantidad" 
+                id="fkit" 
                 placeholder="Elige tu kit..." 
                 items={kitsVariants}
                 class="col-span-1"
+                onchange={defineKit}
             />
             <div class="grid grid-cols-2 gap-2">
                 {#snippet values(img:string, id:number, altimg:string, value:number)}
@@ -221,14 +273,30 @@
                     </div>
                 </div>
                 {/snippet}
-                {@render values("mini_r0.png", 1, "pos1", 1)}
-                {@render values("mini_r0.png", 2, "pos2", 1)}
-                {@render values("mini_r0.png", 3, "pos3", 1)}
-                {@render values("mini_r0.png", 4, "pos4", 1)}
-                {@render values("mini_r0.png", 5, "pos5", 1)}
-                {@render values("mini_r0.png", 6, "pos6", 1)}
-                {@render values("mini_r0.png", 7, "pos7", 1)}
-                {@render values("mini_r0.png", 8, "pos8", 1)}
+                {#if selectedKit === 'orquesta'}
+                    {@render values("mini_r0.png", 1, "orq1", 1)}
+                    {@render values("mini_r0.png", 2, "orq2", 1)}
+                    {@render values("mini_r0.png", 3, "orq3", 1)}
+                    {@render values("mini_r0.png", 4, "orq4", 1)}
+                    {@render values("mini_r0.png", 5, "orq5", 1)}
+                    {@render values("mini_r0.png", 6, "orq6", 1)}
+                    {@render values("mini_r0.png", 7, "orq7", 1)}
+                    {@render values("mini_r0.png", 8, "orq8", 1)}
+                {:else if selectedKit === 'gym'}
+                    {@render values("mini_r0.png", 1, "gym1", 1)}
+                    {@render values("mini_r0.png", 2, "gym2", 1)}
+                    {@render values("mini_r0.png", 3, "gym3", 1)}
+                    {@render values("mini_r0.png", 4, "gym4", 1)}
+                    {@render values("mini_r0.png", 5, "gym5", 1)}
+                    {@render values("mini_r0.png", 6, "gym6", 1)}
+                {:else if selectedKit === 'museo'}
+                    {@render values("mini_r0.png", 1, "mus1", 1)}
+                    {@render values("mini_r0.png", 2, "mus2", 1)}
+                    {@render values("mini_r0.png", 3, "mus3", 1)}
+                    {@render values("mini_r0.png", 4, "mus4", 1)}
+                    {@render values("mini_r0.png", 5, "mus5", 1)}
+                    {@render values("mini_r0.png", 6, "mus6", 1)}
+                {/if}
             </div>
             {/if}
         </Label>
