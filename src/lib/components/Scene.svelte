@@ -3,7 +3,17 @@
   import { CubeEnvironment, OrbitControls, Suspense, Text } from "@threlte/extras";
   import { onMount } from "svelte";
   import { DoubleSide, Color, ShaderMaterial, type WebGLRenderer } from "three";
-  import Mmoi2 from "./mmoi2.svelte";
+	import MmoiBlack from "./mmoiBlack.svelte";
+	import MmoiWhite from "./mmoiWhite.svelte";
+	import MmoiGray from "./mmoiGray.svelte";
+	import MmoiTranslucent from "./mmoiTranslucent.svelte";
+  let { modelColor = 'black' }: { modelColor: "black" | "white" | "gray" | "translucent" | undefined } = $props();
+  let currentColor = $state(modelColor); // Estado reactivo local
+
+  $effect(() => {
+    console.log("Color actualizado en Scene:", modelColor);
+    currentColor = modelColor; // Sincroniza cuando cambia la prop
+  });
 
   let time = 0;
   let shaderMaterial: ShaderMaterial | undefined;
@@ -20,6 +30,10 @@
       (shaderMaterial as ShaderMaterial).uniforms.uTime.value = time;
     }
   });
+
+  // $effect(() => {
+  //   console.log("Scene recibió color:", modelColor);
+  // });
 </script>
 
 <Suspense>
@@ -87,5 +101,13 @@
   />
 </T.Mesh>
 
-<Mmoi2 />
+{#if currentColor === 'black'}
+<MmoiBlack />
+{:else if currentColor === 'gray'}
+<MmoiGray />
+{:else if currentColor === 'white'}
+<MmoiWhite />
+{:else}
+<MmoiTranslucent />
+{/if}
 </Suspense>

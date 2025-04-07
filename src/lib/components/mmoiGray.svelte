@@ -12,7 +12,6 @@ Command: npx @threlte/gltf@3.0.0 ./static/mmoi2.glb --transform --types --draco
   // let { modelColor } = $props();
 
   let {
-    modelColor = 'black',
     fallback,
     error,
     children,
@@ -23,7 +22,6 @@ Command: npx @threlte/gltf@3.0.0 ./static/mmoi2.glb --transform --types --draco
     children?: Snippet<[{ ref: THREE.Group }]>
     fallback?: Snippet
     error?: Snippet<[{ error: Error }]>
-    modelColor?: keyof typeof materials
   } = $props()
 
   type GLTFResult = {
@@ -68,7 +66,7 @@ Command: npx @threlte/gltf@3.0.0 ./static/mmoi2.glb --transform --types --draco
       roughness: 0.1
     })
   };
-  const getMaterial = () => materials[modelColor as keyof typeof materials] || materials.translucent;
+  // const getMaterial = () => materials[modelColor as keyof typeof materials] || materials.translucent;
 
   const dracoLoader = useDraco();
   const gltf = useGltf<GLTFResult>('/models/mmoi2-transformed.glb', { dracoLoader });
@@ -90,7 +88,7 @@ Command: npx @threlte/gltf@3.0.0 ./static/mmoi2.glb --transform --types --draco
     /> -->
     <T.Mesh
       geometry={gltf.nodes.Mesh_0.geometry}
-      material={getMaterial()}
+      material={materials.gray}
       position={[0, -1, 0]}
       scale={[7, 7, 7]}
     />

@@ -12,9 +12,15 @@ export const itemsVariants = [
     { name: "pos4", value: "pos4" },
     { name: "pos5", value: "pos5" },
     { name: "pos6", value: "pos6" }
-]
+];
 export const kitsVariants = [
     { name: "orquesta", value: "orquesta" },
     { name: "gym", value: "gym" },
     { name: "museo", value: "museo" }
+];
+export const kitsColores = [
+    { name: "white", value: 'white' },
+    { name: "black", value: 'black' },
+    { name: "gray", value: 'gray' },
+    { name: "translucent", value: 'translucent' }
 ]

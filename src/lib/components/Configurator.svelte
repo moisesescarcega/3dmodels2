@@ -1,7 +1,9 @@
 <script lang="ts">
-	import { Accordion, AccordionItem, Button, Card, Heading, Label, NumberInput, P, Select, Toggle } from "flowbite-svelte";
-    import { itemsScale, itemsVariants, kitsVariants } from "./variantes";
-	import { onMount } from "svelte";
+	import { Accordion, AccordionItem, Button, Card, Dropdown, DropdownItem, Heading, Label, NumberInput, P, Select, Toggle } from "flowbite-svelte";
+    import { itemsScale, itemsVariants, kitsVariants, kitsColores } from "./variantes";
+	import { createEventDispatcher, onMount } from "svelte";
+    const dispatch = createEventDispatcher();
+    let { modelColor = 'black' }: { modelColor: "black" | "white" | "gray" | "translucent" | undefined } = $props();
     let toggleKits = $state(true); // por default habilitada personalizacion, se puede cambiar a kits predefinidos
     let cantidad = $state(1); // cantidad de kits
     let dcantidad = $state(true); // el campo de cantidad está inhabilitado por default
@@ -14,9 +16,15 @@
     let qFiguraInicial2 = $state(1);
     let qFiguraInicial3 = $state(1);
     let qFiguraInicial4 = $state(1);
+    let selectedColor = $state(modelColor);
     let enabledOrder = $state(false); // el botón de agregar se habilita si se cumplen los criterios
     let costoPorFigura = $state(0); // costo por figura depende de la escala seleccionada, 0 por default
 
+    const handleColorChange = () => {
+        dispatch('colorChange', selectedColor);
+        // modelColor = selectedColor;
+        console.log('seleccionado: ', selectedColor);
+    }
     // Calcula el total de figuras
     let calculateFigurines = () => {
         let sum: number;
@@ -187,12 +195,12 @@
 <form>
     <!-- <Card class="gap-y-2"> -->
         <Accordion class="bg-white rounded-t-xl">
-            <AccordionItem open>
+            <AccordionItem open class="p-3">
                 <span slot="header" class="text-right">Configura tu paquete</span>
                 <!-- <Heading class="text-right" tag="h5">
                     Configura tu paquete
                 </Heading> -->
-                <div class="grid grid-cols-5 gap-2">
+                <div class="grid grid-cols-5 gap-2 mb-3">
                     <Label class="col-span-3">Escala:
                         <Select 
                             required 
@@ -221,19 +229,38 @@
                     </Label>
                     {/if}
                 </div>
-                <Label>Opciones:
-                    <div class="flex flex-row items-center m-2">
-                        <Toggle
-                            id="ftoggle"
-                            bind:checked={toggleKits}
-                            onchange={calculateFigurines}
-                            class="mr-2"
-                        >
-                            Paquetes personalizables
-                        </Toggle>
-                    </div>
-                </Label>
-                <Label class="h-[120px] lg:h-auto overflow-auto">
+                <div class="grid grid-cols-5 gap-2">
+                    <Label class="col-span-3">Opciones:
+                        <div class="flex flex-row items-center m-2">
+                            <Toggle
+                                id="ftoggle"
+                                bind:checked={toggleKits}
+                                onchange={calculateFigurines}
+                                class="mr-2"
+                            >
+                                <P class="text-xs">Paquetes personalizables</P>
+                            </Toggle>
+                        </div>
+                    </Label>
+                    <Label class="col-span-2">Color: <br />
+                        <Select 
+                            id="sColor" 
+                            items={kitsColores} 
+                            bind:value={selectedColor} 
+                            placeholder="Elige color" 
+                            onchange={handleColorChange}
+                        />
+                        <!-- <button id="color-button" class="shrink-0 w-full inline-flex items-center py-2.5 px-4 text-sm font-medium text-center bg-gray-100 border border-gray-300 rounded-lg hover:bg-gray-200 focus:ring-4 focus:outline-hidden focus:ring-gray-100 dark:bg-gray-700 dark:hover:bg-gray-600 dark:focus:ring-gray-700 dark:text-white dark:border-gray-600" type="button">
+                            <div class="w-[24px] h-[12px] rounded-xs border"></div>&nbsp;Blanco
+                        </button>
+                        <Dropdown triggeredBy="#color-button">
+                            <DropdownItem class="flex flex-row">
+                                <div class="w-[24px] h-[12px] rounded-xs border border-white"></div>Blanco
+                            </DropdownItem>
+                        </Dropdown> -->
+                    </Label>
+                </div>
+                <Label class="h-[120px] lg:h-auto overflow-auto mb-3">
                     {#if toggleKits}
                     <div class="grid grid-cols-2 gap-2">
                         {#snippet values(img:string, id:number, altimg:string, value:number)}
