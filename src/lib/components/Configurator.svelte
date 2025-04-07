@@ -1,9 +1,14 @@
 <script lang="ts">
 	import { Accordion, AccordionItem, Button, Card, Dropdown, DropdownItem, Heading, Label, NumberInput, P, Select, Toggle } from "flowbite-svelte";
     import { itemsScale, itemsVariants, kitsVariants, kitsColores } from "./variantes";
-	import { createEventDispatcher, onMount } from "svelte";
-    const dispatch = createEventDispatcher();
-    let { modelColor = 'black' }: { modelColor: "black" | "white" | "gray" | "translucent" | undefined } = $props();
+	import { onMount } from "svelte";
+    let { 
+        modelColor = 'black', 
+        onColorChange = () => {} // Función por defecto vacía
+    }: { 
+        modelColor: "black" | "white" | "gray" | "translucent" | undefined, 
+        onColorChange: (color: string) => void 
+    } = $props();
     let toggleKits = $state(true); // por default habilitada personalizacion, se puede cambiar a kits predefinidos
     let cantidad = $state(1); // cantidad de kits
     let dcantidad = $state(true); // el campo de cantidad está inhabilitado por default
@@ -21,8 +26,7 @@
     let costoPorFigura = $state(0); // costo por figura depende de la escala seleccionada, 0 por default
 
     const handleColorChange = () => {
-        dispatch('colorChange', selectedColor);
-        // modelColor = selectedColor;
+        onColorChange(selectedColor);
         console.log('seleccionado: ', selectedColor);
     }
     // Calcula el total de figuras
@@ -193,13 +197,9 @@
     };
 </script>
 <form>
-    <!-- <Card class="gap-y-2"> -->
         <Accordion class="bg-white rounded-t-xl">
             <AccordionItem open class="p-3">
                 <span slot="header" class="text-right">Configura tu paquete</span>
-                <!-- <Heading class="text-right" tag="h5">
-                    Configura tu paquete
-                </Heading> -->
                 <div class="grid grid-cols-5 gap-2 mb-3">
                     <Label class="col-span-3">Escala:
                         <Select 
@@ -224,7 +224,6 @@
                                 onchange={calculateFigurines}
                             />
                             <!-- <P class="">paquetes de {qitems} escalas</P> -->
-                            <!-- <P class="">paquetes de escalas</P> -->
                          </div>
                     </Label>
                     {/if}
@@ -250,14 +249,6 @@
                             placeholder="Elige color" 
                             onchange={handleColorChange}
                         />
-                        <!-- <button id="color-button" class="shrink-0 w-full inline-flex items-center py-2.5 px-4 text-sm font-medium text-center bg-gray-100 border border-gray-300 rounded-lg hover:bg-gray-200 focus:ring-4 focus:outline-hidden focus:ring-gray-100 dark:bg-gray-700 dark:hover:bg-gray-600 dark:focus:ring-gray-700 dark:text-white dark:border-gray-600" type="button">
-                            <div class="w-[24px] h-[12px] rounded-xs border"></div>&nbsp;Blanco
-                        </button>
-                        <Dropdown triggeredBy="#color-button">
-                            <DropdownItem class="flex flex-row">
-                                <div class="w-[24px] h-[12px] rounded-xs border border-white"></div>Blanco
-                            </DropdownItem>
-                        </Dropdown> -->
                     </Label>
                 </div>
                 <Label class="h-[120px] lg:h-auto overflow-auto mb-3">
@@ -348,5 +339,4 @@
                 </div>
             </AccordionItem>
         </Accordion>
-    <!-- </Card> -->
 </form>

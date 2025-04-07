@@ -3,13 +3,13 @@
     import Scene from "./components/Scene.svelte";
 	import Configurator from "./components/Configurator.svelte";
     let { modelColor } = $props();
-    const handleColorChange = (event: CustomEvent<string>) => {
-        modelColor = event.detail;
+    const handleColorChange = (color: string) => {
+        modelColor = color;
     };
 </script>
 <Canvas>
     <Scene {modelColor} />
 </Canvas>
 <section class="absolute lg:right-3 mx-2 lg:top-[5rem] bottom-8 w-full lg:w-[360px]">
-    <Configurator {modelColor} on:colorChange={handleColorChange} />
+    <Configurator {modelColor} onColorChange={handleColorChange} />
 </section>

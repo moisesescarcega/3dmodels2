@@ -19,8 +19,8 @@ export const kitsVariants = [
     { name: "museo", value: "museo" }
 ];
 export const kitsColores = [
-    { name: "white", value: 'white' },
-    { name: "black", value: 'black' },
-    { name: "gray", value: 'gray' },
-    { name: "translucent", value: 'translucent' }
+    { name: "blanco", value: 'white' },
+    { name: "negro", value: 'black' },
+    { name: "gris", value: 'gray' },
+    { name: "translúcido", value: 'translucent' }
 ]
