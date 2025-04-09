@@ -51,7 +51,7 @@ Command: npx @threlte/gltf@3.0.0 ./static/mmoi2.glb --transform --types --draco
       roughness: 0.2
     }),
     gray: new THREE.MeshPhysicalMaterial({
-      transmission: 1.0,
+      transmission: 0.8,
       thickness: 0.5,
       attenuationColor: new THREE.Color(0x444444),
       attenuationDistance: 5.5,

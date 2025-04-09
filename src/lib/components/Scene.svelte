@@ -16,7 +16,7 @@
   });
 
   let time = 0;
-  let shaderMaterial: ShaderMaterial | undefined;
+  let shaderMaterial: ShaderMaterial | undefined = $state();
   
   onMount(() => {
     const {renderer} = useThrelte() as {renderer: WebGLRenderer};

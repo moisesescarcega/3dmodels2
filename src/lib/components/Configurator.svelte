@@ -4,10 +4,12 @@
 	import { onMount } from "svelte";
     let { 
         modelColor = 'black', 
-        onColorChange = () => {} // Función por defecto vacía
+        onColorChange = () => {},
+        viewOrder
     }: { 
         modelColor: "black" | "white" | "gray" | "translucent" | undefined, 
-        onColorChange: (color: string) => void 
+        onColorChange: (color: string) => void,
+        viewOrder: boolean 
     } = $props();
     let toggleKits = $state(true); // por default habilitada personalizacion, se puede cambiar a kits predefinidos
     let cantidad = $state(1); // cantidad de kits
