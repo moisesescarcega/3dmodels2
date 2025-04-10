@@ -3,32 +3,36 @@
     import { itemsScale, itemsVariants, kitsVariants, kitsColores } from "./variantes";
 	import { onMount } from "svelte";
     let { 
-        modelColor = 'black', 
-        onColorChange = () => {},
-        viewOrder
+        modelColor = $bindable('black'),
+        qKits = $bindable(1),
+        qFigures = $bindable(0),
+        sScale = $bindable(''),
+        setViewOrder = () => {},
     }: { 
-        modelColor: "black" | "white" | "gray" | "translucent" | undefined, 
-        onColorChange: (color: string) => void,
-        viewOrder: boolean 
+        modelColor: string,
+        qKits: number,
+        qFigures: number,
+        sScale: string,
+        setViewOrder: (value: boolean) => void,
     } = $props();
     let toggleKits = $state(true); // por default habilitada personalizacion, se puede cambiar a kits predefinidos
-    let cantidad = $state(1); // cantidad de kits
+    let cantidad = $derived(qKits); // cantidad de kits
     let dcantidad = $state(true); // el campo de cantidad está inhabilitado por default
-    let selectedScale = $state(""); // sin escala seleccionada por default
+    let selectedScale = $derived(sScale); // sin escala seleccionada por default
     let selectedKit = $state(""); // sin kit seleccionado por default 
     let qitems = $state(0); // cantidad de figuras por kit
-    let totalFigures = $state(0); // total de figuras
+    let totalFigures = $derived(qFigures); // total de figuras
     let subtotalFigures = $state(0); // subtotal de figuras
     let qFiguraInicial1 = $state(1);
     let qFiguraInicial2 = $state(1);
     let qFiguraInicial3 = $state(1);
     let qFiguraInicial4 = $state(1);
-    let selectedColor = $state(modelColor);
+    let selectedColor = $derived(modelColor);
     let enabledOrder = $state(false); // el botón de agregar se habilita si se cumplen los criterios
     let costoPorFigura = $state(0); // costo por figura depende de la escala seleccionada, 0 por default
 
     const handleColorChange = () => {
-        onColorChange(selectedColor);
+        modelColor = selectedColor;
         console.log('seleccionado: ', selectedColor);
     }
     // Calcula el total de figuras
@@ -40,65 +44,22 @@
                 return acc + (input ? parseInt(input.value) || 0 : 0);
             }, 0);
         } else { sum = qitems};
+        qKits = cantidad;
         subtotalFigures = sum;
         totalFigures = sum * cantidad;
+        qFigures = totalFigures;
         subtotalFigures >= qitems && qitems !== 0 ? enabledOrder = true : enabledOrder = false;
     };
 
     // Selecciona la escala de acuerdo a las opciones disponibles
     let selectScale = () => {
         selectedScale = (document.getElementById("fescala") as HTMLSelectElement)?.value;
-        switch (selectedScale) {
-            case '1 a 50':
-                qFiguraInicial1 = 3;
-                qFiguraInicial2 = 3;
-                qFiguraInicial3 = 2;
-                qFiguraInicial4 = 2;
-                costoPorFigura = 10;
-                break;
-            case '1 a 75':
-                qFiguraInicial1 = 4;
-                qFiguraInicial2 = 4;
-                qFiguraInicial3 = 4;
-                qFiguraInicial4 = 3;
-                costoPorFigura = 7;
-                break;
-            case '1 a 100':
-                qFiguraInicial1 = 6;
-                qFiguraInicial2 = 6;
-                qFiguraInicial3 = 4;
-                qFiguraInicial4 = 4;
-                costoPorFigura = 5;
-                break;
-            case '1 a 150': 
-                qFiguraInicial1 = 9;
-                qFiguraInicial2 = 9;
-                qFiguraInicial3 = 9;
-                qFiguraInicial4 = 8;
-                costoPorFigura = 3;
-                break;
-            case '1 a 200':
-                qFiguraInicial1 = 13;
-                qFiguraInicial2 = 13;
-                qFiguraInicial3 = 12;
-                qFiguraInicial4 = 12;
-                costoPorFigura = 2;
-                break;
-            default:
-                qFiguraInicial1 = 1;
-                qFiguraInicial2 = 1;
-                qFiguraInicial3 = 1;
-                qFiguraInicial4 = 1;
-                costoPorFigura = 0;
-                break;
-        };
+        sScale = selectedScale;
+        configureScaleValues(selectedScale);
         const selectedItem = itemsScale.find((item) => item.value === selectedScale);
         qitems = selectedItem?.qitems || 0;
         dcantidad = true;
-
-        setTimeout(() => {
-            calculateFigurines();
-            const orderSummary = {
+        console.log('Order Summary:', {
             scale: selectedScale,
             figures: {
                 standing_man: qFiguraInicial1,
@@ -109,10 +70,49 @@
             totalFigures: totalFigures,
             totalAmount: totalFigures * costoPorFigura,
             costPerFigure: costoPorFigura
+        });
+        for (let i = 1; i <= 4; i++) {
+        const input = document.querySelector(`#ntipo-${i}`) as HTMLInputElement;
+            if (input) {
+                switch (i) {
+                    case 1: input.value = qFiguraInicial1.toString(); break;
+                    case 2: input.value = qFiguraInicial2.toString(); break;
+                    case 3: input.value = qFiguraInicial3.toString(); break;
+                    case 4: input.value = qFiguraInicial4.toString(); break;
+                }
+            }
         };
-        console.log('Order Summary:', orderSummary);
-        }, 0);
+        calculateFigurines();
+
     };
+    function configureScaleValues(scale: string) {
+        switch (scale) {
+            case '1 a 50':
+                qFiguraInicial1 = 3; qFiguraInicial2 = 3; qFiguraInicial3 = 2; qFiguraInicial4 = 2;
+                costoPorFigura = 10;
+                break;
+            case '1 a 75':
+                qFiguraInicial1 = 4; qFiguraInicial2 = 4; qFiguraInicial3 = 4; qFiguraInicial4 = 3;
+                costoPorFigura = 7;
+                break;
+            case '1 a 100':
+                qFiguraInicial1 = 6; qFiguraInicial2 = 6; qFiguraInicial3 = 4; qFiguraInicial4 = 4;
+                costoPorFigura = 5;
+                break;
+            case '1 a 150': 
+                qFiguraInicial1 = 9; qFiguraInicial2 = 9; qFiguraInicial3 = 9; qFiguraInicial4 = 8;
+                costoPorFigura = 3;
+                break;
+            case '1 a 200':
+                qFiguraInicial1 = 13; qFiguraInicial2 = 13; qFiguraInicial3 = 12; qFiguraInicial4 = 12;
+                costoPorFigura = 2;
+                break;
+            default:
+                qFiguraInicial1 = 1; qFiguraInicial2 = 1; qFiguraInicial3 = 1; qFiguraInicial4 = 1;
+                costoPorFigura = 0;
+        }
+    };
+
     let quantityOptions = $derived(
         selectedScale === '1 a 50' || selectedScale === '1 a 75' 
         ? [1, 2, 3, 4, 5].map(value => ({ label: value.toString(), value, name: value.toString() })) 
@@ -170,7 +170,10 @@
     onMount(() => {
         for (let i = 1; i <= 4; i++) {
             classTypeOnLoad(i);
-        }
+        };
+        if (selectedScale) {
+            calculateFigurines();
+        };
     });
 
     const handleAddToCart = () => {
@@ -195,6 +198,8 @@
             totalAmount: totalFigures * costoPorFigura,
             costPerFigure: costoPorFigura
         };
+        setViewOrder(false);
+        sScale = selectedScale;
         console.log('Cart Order Summary:', orderSummary);
     };
 </script>
@@ -211,6 +216,7 @@
                             placeholder="Selecciona una opción..." 
                             items={itemsScale} 
                             onchange={selectScale}
+                            bind:value={selectedScale}
                         />
                     </Label>
                     {#if dcantidad}
@@ -225,7 +231,6 @@
                                 bind:value={cantidad}
                                 onchange={calculateFigurines}
                             />
-                            <!-- <P class="">paquetes de {qitems} escalas</P> -->
                          </div>
                     </Label>
                     {/if}
@@ -327,7 +332,7 @@
                 </Label>
                 <div class="grid grid-cols-2 gap-6">
                     <Label>Total:
-                        <P size="xl" class="text-right font-bold">
+                        <P id="sumaSubtotal" size="xl" class="text-right font-bold">
                             {#if enabledOrder}
                             $ &nbsp;{totalFigures * costoPorFigura} MXN
                             {:else}

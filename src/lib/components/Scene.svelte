@@ -7,7 +7,7 @@
 	import MmoiWhite from "./mmoiWhite.svelte";
 	import MmoiGray from "./mmoiGray.svelte";
 	import MmoiTranslucent from "./mmoiTranslucent.svelte";
-  let { modelColor = 'black' }: { modelColor: "black" | "white" | "gray" | "translucent" | undefined } = $props();
+  let { modelColor = 'black' } = $props();
   let currentColor = $state(modelColor); // Estado reactivo local
 
   $effect(() => {
