@@ -2,18 +2,55 @@
 	import { Accordion, AccordionItem, Button, Card, Dropdown, DropdownItem, Heading, Label, NumberInput, P, Select, Toggle } from "flowbite-svelte";
     import { itemsScale, itemsVariants, kitsVariants, kitsColores } from "./variantes";
 	import { onMount } from "svelte";
+    import { cartItems } from "$lib/cartStore";
     let { 
         modelColor = $bindable('black'),
         qKits = $bindable(1),
         qFigures = $bindable(0),
         sScale = $bindable(''),
         setViewOrder = () => {},
+        preOrder = $bindable({
+			scale: "",
+			kits: 0,
+			figures: {
+				standing_man: 0,
+				standing_woman: 0,
+				sitting: 0,
+				walking: 0,
+				kit: undefined
+			},
+			figuresPerKit: 0,
+			totalFigures: 0,
+			totalAmount: 0,
+			costPerFigure: 0
+		})
     }: { 
         modelColor: string,
         qKits: number,
         qFigures: number,
         sScale: string,
         setViewOrder: (value: boolean) => void,
+        preOrder: {
+            scale: string;
+            kits: number;
+            figures: {
+                standing_man: number;
+                standing_woman: number;
+                sitting: number;
+                walking: number;
+                kit?: undefined;
+            } | {
+                kit: string;
+                standing_man?: undefined;
+                standing_woman?: undefined;
+                sitting?: undefined;
+                walking?: undefined;
+            };
+            figuresPerKit: number;
+            totalFigures: number;
+            totalAmount: number;
+            costPerFigure: number;
+        }
     } = $props();
     let toggleKits = $state(true); // por default habilitada personalizacion, se puede cambiar a kits predefinidos
     let cantidad = $derived(qKits); // cantidad de kits
@@ -33,7 +70,6 @@
 
     const handleColorChange = () => {
         modelColor = selectedColor;
-        console.log('seleccionado: ', selectedColor);
     }
     // Calcula el total de figuras
     let calculateFigurines = () => {
@@ -83,7 +119,6 @@
             }
         };
         calculateFigurines();
-
     };
     function configureScaleValues(scale: string) {
         switch (scale) {
@@ -189,7 +224,7 @@
                 return {kit: selectedKit};
             }
         };
-        const orderSummary = {
+        preOrder = {
             scale: selectedScale,
             kits: cantidad,
             figures: currentValues(),
@@ -198,9 +233,14 @@
             totalAmount: totalFigures * costoPorFigura,
             costPerFigure: costoPorFigura
         };
-        setViewOrder(false);
         sScale = selectedScale;
-        console.log('Cart Order Summary:', orderSummary);
+        setViewOrder(false);
+        const newItem = {
+            id: crypto.randomUUID(),
+            color: modelColor,
+            order: {...preOrder}
+        }
+        cartItems.update( items => [...items, newItem]);
     };
 </script>
 <form>
