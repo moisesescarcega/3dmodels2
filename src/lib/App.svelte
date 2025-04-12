@@ -7,9 +7,6 @@
     let items: any[] = $state([]);
     cartItems.subscribe( value => { items = value; });
     let modelColor: string = $state("black");
-    let qKits: number = $state(1);
-    let qFigures: number = $state(0);
-    let sScale = $state('');
     let viewOrder = $state(true);
     const setViewOrder = (value:boolean) => {viewOrder = value};
     let preOrder = $state({
@@ -39,14 +36,14 @@
 <Canvas>
     <Scene {modelColor} />
 </Canvas>
-<section class="absolute lg:right-3 mx-2 lg:top-[5rem] bottom-8 w-full lg:w-[360px]">
-    <Configurator bind:modelColor bind:qKits bind:qFigures bind:sScale {setViewOrder} bind:preOrder />
+<section class="absolute ml-3 mr-3 lg:right-3 lg:top-[5rem] bottom-[22px] max-w-[420px]">
+    <Configurator bind:modelColor {setViewOrder} bind:preOrder />
 </section>
 <section>
     <Drawer transitionType="fly" id="orderDrawer" bind:hidden={viewOrder}>
         {#each items as item}
         <Card class="my-2" id={`card-${item.id}`}>
-            <P size="lg" align="right">Conjunto seleccionado:</P>
+            <P size="sm" align="right">Conjunto #: ... {item.id.slice(-6)}</P>
             <P>Escala: {item.order.scale}</P>
             <P>Color: {item.color}</P>
             <P>{item.order.figures.kit}</P>

@@ -2,7 +2,7 @@
   import { Navbar, NavBrand, NavLi, NavUl, NavHamburger } from 'flowbite-svelte';
 </script>
 <header>
-    <Navbar class="md:flex bg-primary-500 dark:bg-primary-900 h-16 p-0">
+    <Navbar class="md:flex bg-primary-500 dark:bg-primary-900 h-[48px] p-0">
         <NavBrand href="/" class="text-md flex flex-row items-center">
             <img src="favicon.png" alt="Logo" class="h-8" />
             <span class="text-md font-bold text-gray-900 dark:text-white">maquetas.xyz</span>

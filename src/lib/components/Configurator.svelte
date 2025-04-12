@@ -1,13 +1,10 @@
 <script lang="ts">
-	import { Accordion, AccordionItem, Button, Card, Dropdown, DropdownItem, Heading, Label, NumberInput, P, Select, Toggle } from "flowbite-svelte";
+	import { Accordion, AccordionItem, Button, Label, NumberInput, P, Select, Toggle } from "flowbite-svelte";
     import { itemsScale, itemsVariants, kitsVariants, kitsColores } from "./variantes";
 	import { onMount } from "svelte";
     import { cartItems } from "$lib/cartStore";
     let { 
         modelColor = $bindable('black'),
-        qKits = $bindable(1),
-        qFigures = $bindable(0),
-        sScale = $bindable(''),
         setViewOrder = () => {},
         preOrder = $bindable({
 			scale: "",
@@ -26,9 +23,6 @@
 		})
     }: { 
         modelColor: string,
-        qKits: number,
-        qFigures: number,
-        sScale: string,
         setViewOrder: (value: boolean) => void,
         preOrder: {
             scale: string;
@@ -53,12 +47,12 @@
         }
     } = $props();
     let toggleKits = $state(true); // por default habilitada personalizacion, se puede cambiar a kits predefinidos
-    let cantidad = $derived(qKits); // cantidad de kits
+    let cantidad = $state(1); // cantidad de kits
     let dcantidad = $state(true); // el campo de cantidad está inhabilitado por default
-    let selectedScale = $derived(sScale); // sin escala seleccionada por default
+    let selectedScale = $state(''); // sin escala seleccionada por default
     let selectedKit = $state(""); // sin kit seleccionado por default 
     let qitems = $state(0); // cantidad de figuras por kit
-    let totalFigures = $derived(qFigures); // total de figuras
+    let totalFigures = $state(0); // total de figuras
     let subtotalFigures = $state(0); // subtotal de figuras
     let qFiguraInicial1 = $state(1);
     let qFiguraInicial2 = $state(1);
@@ -80,17 +74,14 @@
                 return acc + (input ? parseInt(input.value) || 0 : 0);
             }, 0);
         } else { sum = qitems};
-        qKits = cantidad;
         subtotalFigures = sum;
         totalFigures = sum * cantidad;
-        qFigures = totalFigures;
         subtotalFigures >= qitems && qitems !== 0 ? enabledOrder = true : enabledOrder = false;
     };
 
     // Selecciona la escala de acuerdo a las opciones disponibles
     let selectScale = () => {
         selectedScale = (document.getElementById("fescala") as HTMLSelectElement)?.value;
-        sScale = selectedScale;
         configureScaleValues(selectedScale);
         const selectedItem = itemsScale.find((item) => item.value === selectedScale);
         qitems = selectedItem?.qitems || 0;
@@ -104,7 +95,7 @@
                 walking: qFiguraInicial4
             },
             totalFigures: totalFigures,
-            totalAmount: totalFigures * costoPorFigura,
+            // totalAmount: totalFigures * costoPorFigura,
             costPerFigure: costoPorFigura
         });
         for (let i = 1; i <= 4; i++) {
@@ -233,7 +224,6 @@
             totalAmount: totalFigures * costoPorFigura,
             costPerFigure: costoPorFigura
         };
-        sScale = selectedScale;
         setViewOrder(false);
         const newItem = {
             id: crypto.randomUUID(),
@@ -244,146 +234,146 @@
     };
 </script>
 <form>
-        <Accordion class="bg-white rounded-t-xl">
-            <AccordionItem open class="p-3">
-                <span slot="header" class="text-right">Configura tu paquete</span>
-                <div class="grid grid-cols-5 gap-2 mb-3">
-                    <Label class="col-span-3">Escala:
-                        <Select 
-                            required 
-                            size="sm" 
-                            id="fescala" 
-                            placeholder="Selecciona una opción..." 
-                            items={itemsScale} 
-                            onchange={selectScale}
-                            bind:value={selectedScale}
-                        />
-                    </Label>
-                    {#if dcantidad}
-                    <Label class="col-span-2">Cantidad de kits:
-                         <div class="flex flex-col">
-                            <Select 
-                                required 
-                                size="sm" 
-                                id="fcantidad" 
-                                placeholder="Selecciona la cantidad..." 
-                                items={quantityOptions}
-                                bind:value={cantidad}
-                                onchange={calculateFigurines}
-                            />
-                         </div>
-                    </Label>
-                    {/if}
-                </div>
-                <div class="grid grid-cols-5 gap-2">
-                    <Label class="col-span-3">Opciones:
-                        <div class="flex flex-row items-center m-2">
-                            <Toggle
-                                id="ftoggle"
-                                bind:checked={toggleKits}
-                                onchange={calculateFigurines}
-                                class="mr-2"
-                            >
-                                <P class="text-xs">Paquetes personalizables</P>
-                            </Toggle>
-                        </div>
-                    </Label>
-                    <Label class="col-span-2">Color: <br />
-                        <Select 
-                            id="sColor" 
-                            items={kitsColores} 
-                            bind:value={selectedColor} 
-                            placeholder="Elige color" 
-                            onchange={handleColorChange}
-                        />
-                    </Label>
-                </div>
-                <Label class="h-[120px] lg:h-auto overflow-auto mb-3">
-                    {#if toggleKits}
-                    <div class="grid grid-cols-2 gap-2">
-                        {#snippet values(img:string, id:number, altimg:string, value:number)}
-                            <div class="flex flex-row items-center">
-                                <img src={img} id={`tipo-${id}`} alt={altimg} class="h-16 m-2" />
-                                <div class="flex-col">
-                                    <P size="sm">{altimg}</P>
-                                    <NumberInput 
-                                        size="sm" 
-                                        id={`ntipo-${id}`} 
-                                        disabled={!dcantidad}
-                                        onchange={() => selectType(id)} 
-                                        min={0} 
-                                        max={20} 
-                                        value={value} 
-                                    />
-                                </div>
-                            </div>
-                        {/snippet}
-                        {@render values("mini_r0.png", 1, "Hombre de pie", qFiguraInicial1)}
-                        {@render values("mini_r0.png", 2, "Mujer de pie", qFiguraInicial2)}
-                        {@render values("mini_r0.png", 3, "Sentado", qFiguraInicial3)}
-                        {@render values("mini_r0.png", 4, "Caminando", qFiguraInicial4)}
-                    </div>
-                    {:else}
+    <Accordion class="bg-white rounded-t-xl">
+        <AccordionItem open class="p-3">
+            <span slot="header" class="text-right">Configura tu paquete &nbsp;</span>
+            <div class="grid grid-cols-5 gap-2 mb-3">
+                <Label class="col-span-3">Escala:
                     <Select 
                         required 
                         size="sm" 
-                        id="fkit" 
-                        placeholder="Elige tu kit..." 
-                        items={kitsVariants}
-                        class="col-span-1"
-                        onchange={defineKit}
+                        id="fescala" 
+                        placeholder="Selecciona una opción..." 
+                        items={itemsScale} 
+                        onchange={selectScale}
+                        bind:value={selectedScale}
                     />
-                    <div class="grid grid-cols-2 gap-2">
-                        {#snippet values(img:string, id:number, altimg:string, value:number)}
+                </Label>
+                {#if dcantidad}
+                <Label class="col-span-2">Cantidad de kits:
+                        <div class="flex flex-col">
+                        <Select 
+                            required 
+                            size="sm" 
+                            id="fcantidad" 
+                            placeholder="Selecciona la cantidad..." 
+                            items={quantityOptions}
+                            bind:value={cantidad}
+                            onchange={calculateFigurines}
+                        />
+                        </div>
+                </Label>
+                {/if}
+            </div>
+            <div class="grid grid-cols-5 gap-2">
+                <Label class="col-span-3">Opciones:
+                    <div class="flex flex-row items-center m-2">
+                        <Toggle
+                            id="ftoggle"
+                            bind:checked={toggleKits}
+                            onchange={calculateFigurines}
+                            class="mr-2"
+                        >
+                            <P class="text-xs">Paquetes personalizables</P>
+                        </Toggle>
+                    </div>
+                </Label>
+                <Label class="col-span-2">Color: <br />
+                    <Select 
+                        id="sColor" 
+                        items={kitsColores} 
+                        bind:value={selectedColor} 
+                        placeholder="Elige color" 
+                        onchange={handleColorChange}
+                    />
+                </Label>
+            </div>
+            <Label class="h-[150px] lg:h-auto overflow-auto mb-3">
+                {#if toggleKits}
+                <div class="grid grid-cols-2 gap-2">
+                    {#snippet values(img:string, id:number, altimg:string, value:number)}
                         <div class="flex flex-row items-center">
                             <img src={img} id={`tipo-${id}`} alt={altimg} class="h-16 m-2" />
                             <div class="flex-col">
                                 <P size="sm">{altimg}</P>
-                                <NumberInput size="sm" id={`ntipo-${id}`} disabled value={value} />
+                                <NumberInput 
+                                    size="sm" 
+                                    id={`ntipo-${id}`} 
+                                    disabled={!dcantidad}
+                                    onchange={() => selectType(id)} 
+                                    min={0} 
+                                    max={20} 
+                                    value={value} 
+                                />
                             </div>
                         </div>
-                        {/snippet}
-                        {#if selectedKit === 'orquesta'}
-                            {@render values("mini_r0.png", 1, "orq1", 1)}
-                            {@render values("mini_r0.png", 2, "orq2", 1)}
-                            {@render values("mini_r0.png", 3, "orq3", 1)}
-                            {@render values("mini_r0.png", 4, "orq4", 1)}
-                            {@render values("mini_r0.png", 5, "orq5", 1)}
-                            {@render values("mini_r0.png", 6, "orq6", 1)}
-                            {@render values("mini_r0.png", 7, "orq7", 1)}
-                            {@render values("mini_r0.png", 8, "orq8", 1)}
-                        {:else if selectedKit === 'gym'}
-                            {@render values("mini_r0.png", 1, "gym1", 1)}
-                            {@render values("mini_r0.png", 2, "gym2", 1)}
-                            {@render values("mini_r0.png", 3, "gym3", 1)}
-                            {@render values("mini_r0.png", 4, "gym4", 1)}
-                            {@render values("mini_r0.png", 5, "gym5", 1)}
-                            {@render values("mini_r0.png", 6, "gym6", 1)}
-                        {:else if selectedKit === 'museo'}
-                            {@render values("mini_r0.png", 1, "mus1", 1)}
-                            {@render values("mini_r0.png", 2, "mus2", 1)}
-                            {@render values("mini_r0.png", 3, "mus3", 1)}
-                            {@render values("mini_r0.png", 4, "mus4", 1)}
-                            {@render values("mini_r0.png", 5, "mus5", 1)}
-                            {@render values("mini_r0.png", 6, "mus6", 1)}
-                        {/if}
-                    </div>
-                    {/if}
-                </Label>
-                <div class="grid grid-cols-2 gap-6">
-                    <Label>Total:
-                        <P id="sumaSubtotal" size="xl" class="text-right font-bold">
-                            {#if enabledOrder}
-                            $ &nbsp;{totalFigures * costoPorFigura} MXN
-                            {:else}
-                            $ &nbsp;- MXN
-                            {/if}
-                        </P>
-                    </Label>
-                    <Button class="w-full" id="addToCart" size="lg" color="blue" disabled={!enabledOrder} onclick={handleAddToCart}>
-                        Añadir
-                    </Button>
+                    {/snippet}
+                    {@render values("mini_r0.png", 1, "Hombre de pie", qFiguraInicial1)}
+                    {@render values("mini_r0.png", 2, "Mujer de pie", qFiguraInicial2)}
+                    {@render values("mini_r0.png", 3, "Sentado", qFiguraInicial3)}
+                    {@render values("mini_r0.png", 4, "Caminando", qFiguraInicial4)}
                 </div>
-            </AccordionItem>
-        </Accordion>
+                {:else}
+                <Select 
+                    required 
+                    size="sm" 
+                    id="fkit" 
+                    placeholder="Elige tu kit..." 
+                    items={kitsVariants}
+                    class="col-span-1"
+                    onchange={defineKit}
+                />
+                <div class="grid grid-cols-2 gap-2">
+                    {#snippet values(img:string, id:number, altimg:string, value:number)}
+                    <div class="flex flex-row items-center">
+                        <img src={img} id={`tipo-${id}`} alt={altimg} class="h-16 m-2" />
+                        <div class="flex-col">
+                            <P size="sm">{altimg}</P>
+                            <NumberInput size="sm" id={`ntipo-${id}`} disabled value={value} />
+                        </div>
+                    </div>
+                    {/snippet}
+                    {#if selectedKit === 'orquesta'}
+                        {@render values("mini_r0.png", 1, "orq1", 1)}
+                        {@render values("mini_r0.png", 2, "orq2", 1)}
+                        {@render values("mini_r0.png", 3, "orq3", 1)}
+                        {@render values("mini_r0.png", 4, "orq4", 1)}
+                        {@render values("mini_r0.png", 5, "orq5", 1)}
+                        {@render values("mini_r0.png", 6, "orq6", 1)}
+                        {@render values("mini_r0.png", 7, "orq7", 1)}
+                        {@render values("mini_r0.png", 8, "orq8", 1)}
+                    {:else if selectedKit === 'gym'}
+                        {@render values("mini_r0.png", 1, "gym1", 1)}
+                        {@render values("mini_r0.png", 2, "gym2", 1)}
+                        {@render values("mini_r0.png", 3, "gym3", 1)}
+                        {@render values("mini_r0.png", 4, "gym4", 1)}
+                        {@render values("mini_r0.png", 5, "gym5", 1)}
+                        {@render values("mini_r0.png", 6, "gym6", 1)}
+                    {:else if selectedKit === 'museo'}
+                        {@render values("mini_r0.png", 1, "mus1", 1)}
+                        {@render values("mini_r0.png", 2, "mus2", 1)}
+                        {@render values("mini_r0.png", 3, "mus3", 1)}
+                        {@render values("mini_r0.png", 4, "mus4", 1)}
+                        {@render values("mini_r0.png", 5, "mus5", 1)}
+                        {@render values("mini_r0.png", 6, "mus6", 1)}
+                    {/if}
+                </div>
+                {/if}
+            </Label>
+            <div class="grid grid-cols-2 gap-6">
+                <Label>Total:
+                    <P id="sumaSubtotal" size="xl" class="text-right font-bold">
+                        {#if enabledOrder}
+                        $ &nbsp;{totalFigures * costoPorFigura} MXN
+                        {:else}
+                        $ &nbsp;- MXN
+                        {/if}
+                    </P>
+                </Label>
+                <Button class="w-full" id="addToCart" size="lg" color="blue" disabled={!enabledOrder} onclick={handleAddToCart}>
+                    Añadir
+                </Button>
+            </div>
+        </AccordionItem>
+    </Accordion>
 </form>
