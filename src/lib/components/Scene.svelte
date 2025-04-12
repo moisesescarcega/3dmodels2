@@ -30,10 +30,6 @@
       (shaderMaterial as ShaderMaterial).uniforms.uTime.value = time;
     }
   });
-
-  // $effect(() => {
-  //   console.log("Scene recibió color:", modelColor);
-  // });
 </script>
 
 <Suspense>
