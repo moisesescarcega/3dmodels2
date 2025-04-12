@@ -1,5 +1,5 @@
 import { writable } from "svelte/store";
-interface CartItem {
+export interface CartItem {
     id: string;
     color: string;
     order: {

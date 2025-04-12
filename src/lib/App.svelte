@@ -1,14 +1,19 @@
 <script lang="ts">
     import { Canvas } from "@threlte/core";
     import Scene from "./components/Scene.svelte";
-	import Configurator from "./components/Configurator.svelte";
-	import { Button, Card, Drawer, Modal, P } from "flowbite-svelte";
+    import Configurator from "./components/Configurator.svelte";
+    import { Button, Card, Drawer, Modal, P, Spinner } from "flowbite-svelte";
     import { CaretRightSolid } from "flowbite-svelte-icons";
     import { cartItems } from "./cartStore";
+    import { downloadOrderPDF } from "./pdfService";
+
     let items: any[] = $state([]);
     let modelColor: string = $state("black");
     let viewOrder = $state(true);
     let defaultModal = $state(false);
+    let isProcessing = $state(false);
+    let orderId = $state("");
+    let pdfGenerated = $state(false);
     let preOrder = $state({
         scale: "",
         kits: 0,
@@ -24,22 +29,50 @@
         totalAmount: 0,
         costPerFigure: 0
     });
-    let finalOrder = [];
+
     let totalAmount = $state(0);
-    cartItems.subscribe( value => { items = value; });
+    cartItems.subscribe(value => { 
+        items = value;
+        calculateTotal(); 
+    });
+
     function calculateTotal() {
         totalAmount = items.reduce((sum, item) => sum + item.order.totalAmount, 0);
     };
-    function removeItem( id: string ) {
-        cartItems.update( items => items.filter(item => item.id !== id ) );
+
+    function removeItem(id: string) {
+        cartItems.update(items => items.filter(item => item.id !== id));
     };
-    function submitOrder() {
-        finalOrder = [...items];
-        console.log(finalOrder);
+
+    async function submitOrder() {
+        try {
+            isProcessing = true;
+            orderId = `ORD-${Date.now()}`;
+            pdfGenerated = true;
+            console.log("Order ID:", orderId);
+        } catch (error) {
+            console.error("Error processing order:", error);
+            alert("Error processing your order. Please try again.");
+        } finally {
+            isProcessing = false;
+        }
     };
-    const setViewOrder = (value:boolean) => {
-        viewOrder = value
+    
+    function downloadPDF() {
+        downloadOrderPDF(items, totalAmount, orderId);
+    }
+    
+    function closeOrderAndClearCart() {
+        defaultModal = false;
+        cartItems.set([]);
+        orderId = "";
+        pdfGenerated = false;
+    }
+
+    const setViewOrder = (value: boolean) => {
+        viewOrder = value;
     };
+
     const handleOrder = () => {
         calculateTotal();
         defaultModal = true;
@@ -80,14 +113,16 @@
         {/if}
     </Drawer>
 </section>
-<Modal autoclose bind:open={defaultModal} title="Resumen de tu pedido">
+<Modal autoclose={false} bind:open={defaultModal} title="Resumen de tu pedido">
     <div class="h-[350px] overflow-auto">
         {#each items as item}
             <P>Orden {item.id}</P>
             <P>Escala: {item.order.scale}; Color: {item.color}; Cantidad: {item.order.kits} kits;</P>
             {#if item.order.figures.kit}
             <P>Kit predefinido: {item.order.figures.kit}</P>
-            <P>Total de escalas: {item.order.totalFigures}</P>
+            <P>Total de escalas: {item.order.totalFigures}; Costo por unidad: ${item.order.costPerFigure} MXN; 
+                Subtotal: ${item.order.totalAmount} MXN
+            </P>
             {:else}
             <P>Total de escalas: {item.order.totalFigures}; Costo por unidad: ${item.order.costPerFigure} MXN; 
                 Subtotal: ${item.order.totalAmount} MXN
@@ -97,5 +132,35 @@
         {/each}
     </div>
     <P id="totalAmount">Total: $ {totalAmount.toFixed(2)} MXN</P>
-    <Button id="submitOrder" class="float-right mt-2" onclick={submitOrder}>Pedir</Button>
+    
+    {#if orderId}
+        <div class="mt-4 p-3 bg-green-100 rounded-lg">
+            <P weight="bold" class="text-green-800">¡Orden enviada con éxito!</P>
+            <P class="text-green-700">Tu número de pedido es: <br /> {orderId}</P>
+            
+            {#if pdfGenerated}
+                <Button class="mt-2" color="blue" onclick={downloadPDF}>
+                    Descargar PDF
+                </Button>
+            {/if}
+            
+            <Button class="mt-2 ml-2" color="alternative" onclick={closeOrderAndClearCart}>
+                Cerrar
+            </Button>
+        </div>
+    {:else}
+        <div class="flex justify-end mt-4">
+            <Button color="alternative" class="mr-2" onclick={() => defaultModal = false}>
+                Cancelar
+            </Button>
+            <Button id="submitOrderFinal" color="blue" onclick={submitOrder} disabled={isProcessing}>
+                {#if isProcessing}
+                    <Spinner size="sm" class="mr-2" />
+                    Procesando...
+                {:else}
+                    Confirmar pedido
+                {/if}
+            </Button>
+        </div>
+    {/if}
 </Modal>
