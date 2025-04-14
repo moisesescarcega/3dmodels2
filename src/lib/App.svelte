@@ -6,6 +6,7 @@
     import { CaretRightSolid } from "flowbite-svelte-icons";
     import { cartItems } from "./cartStore";
     import { downloadOrderPDF } from "./pdfService";
+    import { saveOrderToSupabase } from "./supabaseService";
 
     let items: any[] = $state([]);
     let modelColor: string = $state("black");
@@ -14,6 +15,9 @@
     let isProcessing = $state(false);
     let orderId = $state("");
     let pdfGenerated = $state(false);
+    let orderSavedSuccess = $state(false);
+    let orderError = $state("");
+    let cerrarDisabled = $state(true);
     let preOrder = $state({
         scale: "",
         kits: 0,
@@ -47,12 +51,22 @@
     async function submitOrder() {
         try {
             isProcessing = true;
+            orderSavedSuccess = false;
+            orderError = "";
             orderId = `ORD-${Date.now()}`;
-            pdfGenerated = true;
-            console.log("Order ID:", orderId);
+            const result = await saveOrderToSupabase(items, totalAmount, orderId);
+            if (result.success) {
+                orderSavedSuccess = true;
+                pdfGenerated = true;
+                console.log("Order ID:", orderId);
+            } else {
+                orderError = "Error al guardar en base de datos";
+                console.error(result.error);
+            };
         } catch (error) {
             console.error("Error processing order:", error);
-            alert("Error processing your order. Please try again.");
+            // alert("Error processing your order. Please try again.");
+            orderError = "Error al procesar"
         } finally {
             isProcessing = false;
         }
@@ -60,14 +74,18 @@
     
     function downloadPDF() {
         downloadOrderPDF(items, totalAmount, orderId);
-    }
+        cerrarDisabled = false;
+    };
     
     function closeOrderAndClearCart() {
+        cerrarDisabled = true;
         defaultModal = false;
         cartItems.set([]);
         orderId = "";
         pdfGenerated = false;
-    }
+        orderSavedSuccess = false;
+        orderError = "";
+    };
 
     const setViewOrder = (value: boolean) => {
         viewOrder = value;
@@ -77,7 +95,7 @@
         calculateTotal();
         defaultModal = true;
         setViewOrder(true);
-    }
+    };
 </script>
 <Canvas>
     <Scene {modelColor} />
@@ -135,16 +153,24 @@
     
     {#if orderId}
         <div class="mt-4 p-3 bg-green-100 rounded-lg">
-            <P weight="bold" class="text-green-800">¡Orden enviada con éxito!</P>
-            <P class="text-green-700">Tu número de pedido es: <br /> {orderId}</P>
-            
-            {#if pdfGenerated}
-                <Button class="mt-2" color="blue" onclick={downloadPDF}>
-                    Descargar PDF
+            {#if orderSavedSuccess}
+                <P weight="bold" class="text-green-800">¡Orden enviada con éxito!</P>
+                <P class="text-green-700">Tu número de pedido es: <br /> {orderId}</P>
+                
+                {#if pdfGenerated}
+                    <Button class="mt-2" color="blue" onclick={downloadPDF}>
+                        Descargar PDF
+                    </Button>
+                {/if}
+            {:else if orderError}
+                <P weight="bold" class="text-red-800">Error al procesar la orden</P>
+                <P class="text-red-700">{orderError}</P>
+                <Button class="mt-2" color="blue" onclick={submitOrder}>
+                    Intentar nuevamente
                 </Button>
             {/if}
             
-            <Button class="mt-2 ml-2" color="alternative" onclick={closeOrderAndClearCart}>
+            <Button class="mt-2 ml-2" disabled={cerrarDisabled} color="alternative" onclick={closeOrderAndClearCart}>
                 Cerrar
             </Button>
         </div>
